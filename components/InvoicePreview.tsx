@@ -72,8 +72,6 @@ Additional Information
 Task Description: ${formValues.taskDescription}
 Notes: ${formValues.notes}
 `;
-
-    // Use Clipboard API to copy content
     navigator.clipboard
       .writeText(content)
       .then(() => {

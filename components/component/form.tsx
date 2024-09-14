@@ -88,6 +88,7 @@ function generateInvoiceID(person?: string) {
 
 export function FormN() {
   const [showFields, setFields] = useState(false);
+  const [Loading, setLoading] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -162,13 +163,27 @@ export function FormN() {
   );
 
   async function onSubmit(values: any) {
-    const response = await createInvoice(values);
-    if (response.success) {
-      alert("Invoice created successfully");
-    } else {
-      alert("Failed to create invoice");
+    setLoading(true);
+    try {
+      const response = await createInvoice(values);
+      console.log("Server response:", response);
+      if (response.success) {
+        alert(
+          `Invoice created successfully. Invoice ID: ${response.Invoice?.id}`
+        );
+      } else {
+        alert(`Failed to create invoice. Error: ${response.error}`);
+      }
+
+    } catch (error) {
+      console.error("Error in onSubmit:", error);
+      alert(`An error occurred: ${error}`);
+    } finally {
+      setLoading(false);
+      form.reset();
     }
   }
+
   return (
     <div className=" flex flex-col justify-center items-center gap-6">
       <Card className="max-w-3xl w-full">
@@ -181,7 +196,7 @@ export function FormN() {
             <CardContent className="space-y-4">
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Personal Info</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
                   <FormField
                     control={form.control}
                     name="fullLegalName"
@@ -209,7 +224,7 @@ export function FormN() {
                     )}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
                   <FormField
                     control={form.control}
                     name="discordDisplayName"
@@ -237,7 +252,7 @@ export function FormN() {
                     )}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
                   <FormField
                     control={form.control}
                     name="phoneNumber"
@@ -245,7 +260,7 @@ export function FormN() {
                       <FormItem>
                         <FormLabel>Phone Number</FormLabel>
                         <FormControl>
-                          <Input placeholder="+1 (555) 555-5555"  {...field} />
+                          <Input placeholder="+1 (555) 555-5555" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -265,7 +280,7 @@ export function FormN() {
                     )}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 grid-cols-1 md:gap-4">
                   <FormField
                     control={form.control}
                     name="country"
@@ -279,7 +294,7 @@ export function FormN() {
                       </FormItem>
                     )}
                   />
-                  <FormItem>
+                  <FormItem className="mt-4 md:mt-0">
                     <FormLabel>Send Invoice to</FormLabel>
                     <Select
                       onValueChange={(newValue) =>
@@ -353,11 +368,7 @@ export function FormN() {
                         <FormItem>
                           <FormLabel>Hourly Rate</FormLabel>
                           <FormControl>
-                            <Input
-                              
-                              placeholder="50.00"
-                              {...field}
-                            />
+                            <Input placeholder="50.00" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -385,7 +396,7 @@ export function FormN() {
                     <FormItem>
                       <FormLabel>Invoice Amount</FormLabel>
                       <FormControl>
-                        <Input  placeholder="100.00" {...field} />
+                        <Input placeholder="100.00" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -664,8 +675,17 @@ export function FormN() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button type="submit" className="w-full">
-                Submit
+              <Button type="submit" className="w-full" disabled={Loading}>
+                {Loading ? (
+                  <span className="flex items-center justify-center gap-3">
+                    Submitting
+                    <div
+                      className={`animate-spin rounded-full border-t-2 border-b-2 text-blue-600 w-6 h-6 mr-5`}
+                    />{" "}
+                  </span>
+                ) : (
+                  <span>Submit</span>
+                )}
               </Button>
               <Button
                 className="w-full ml-2 bg-green-500 "
